@@ -1,423 +1,489 @@
-<div  class="oppia-drop-area" ng-if="dropAreaIsAccessible">
-  <div class="oppia-blur-background"></div>
-  <div class="oppia-drop-area-message" >Drop your file here!</div>
-</div>
-<div  class="oppia-drop-area" ng-if="userIsGuest">
-  <div class="oppia-blur-background"></div>
-  <div class="oppia-drop-area-message-for-guest-users">Please log in to upload audio files.</div>
-</div>
-<div class="oppia-audio-recording-bar" ng-show="(!isAudioAvailable || audioIsUpdating) && !selectedRecording">
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition" disabled>
-      <i class="material-icons">play_arrow</i>
-    </button>
-  </div>
-  <div class="d-block d-xl-none oppia-content-wrapper oppia-audio-bar-info">
-    <div class="padding-small-screen">
-      <div ng-if="!cannotRecord && !checkingMicrophonePermission">
-        <span ng-if="canVoiceover"> Press <i class="material-icons">mic</i>  to record.</span>
-      </div>
-      <div ng-if="checkingMicrophonePermission">
-        Loading microphone.<loading-dots></loading-dots>
-      </div>
-      <div ng-if="recordingPermissionDenied && cannotRecord">
-        Permission needed for recording.
-      </div>
-      <div ng-if="unsupportedBrowser && cannotRecord">
-        Microphone is not supported.
-      </div>
-    </div>
-  </div>
-  <div class="d-none d-xl-block oppia-content-wrapper oppia-audio-bar-info">
-    <div class="padding-large-screen">
-      <div ng-if="!cannotRecord && !checkingMicrophonePermission">
-        No audio recorded.<span ng-if="canVoiceover"> Press <i class="material-icons">mic</i>  to start recording.</span>
-      </div>
-      <div ng-if="checkingMicrophonePermission">
-        Loading microphone.<loading-dots></loading-dots>
-      </div>
-      <div ng-if="recordingPermissionDenied && cannotRecord">
-        You need to grant permission for this application to use your microphone.
-      </div>
-      <div ng-if="unsupportedBrowser && cannotRecord">
-        Sorry, your browser does not support recording feature.
-      </div>
-    </div>
-  </div>
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition protractor-test-accessibility-translation-start-record"
-            uib-tooltip="Record"
-            tooltip-placement="above"
-            ng-click="checkAndStartRecording()"
-            ng-hide="!canVoiceover || cannotRecord"
-            aria-label="Start recording"
-            for="Recording">
-      <i class="material-icons">&#xE029;</i>
-    </button>
-  </div>
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition protractor-test-upload-audio-button protractor-test-accessibility-translation-upload-audio"
-            uib-tooltip="Upload"
-            tooltip-placement="above"
-            ng-click="openAddAudioTranslationModal()"
-            ng-hide="!canVoiceover"
-            aria-label="Upload voiceovered file">
-      <i class="material-icons">&#xE2C6;</i>
-    </button>
-  </div>
-</div>
-<div class="oppia-audio-recording-bar" ng-show="selectedRecording  && !audioIsCurrentlyBeingSaved">
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition protractor-test-accessibility-translation-play-recorded-audio"
-            ng-click="playAndPauseUnsavedAudio()"
-            ng-disabled="voiceoverRecorder.status().isRecording"
-            aria-label="Play recorded audio">
-      <i class="material-icons"><[unsavedAudioIsPlaying ? 'pause' : 'play_arrow']></i>
-    </button>
-  </div>
-  <div class="oppia-content-wrapper oppia-flex-1-wrapper">
-    <div class="oppia-audio-visualiser">
-      <div class="oppia-mp3-converting" ng-if="voiceoverRecorder.status().isRecording">
-        Recording audio<loading-dots></loading-dots>
-      </div>
-      <canvas-sizer id="analyser">
-        <div id="visualized" class="oppia-audio-wave-view" ng-if="!voiceoverRecorder.status().isRecording && !audioIsCurrentlyBeingSaved">
-        </div>
-      </canvas-sizer>
-    </div>
-  </div>
-  <div class="oppia-content-wrapper" ng-if="voiceoverRecorder.status().isRecording">
-    <div class="oppia-recording-timer">
-      <[elapsedTime | formatTimer]> / <[recordingTimeLimit - 1 | formatTimer]>
-    </div>
-  </div>
-  <div class="oppia-content-wrapper" ng-if="voiceoverRecorder.status().isRecording">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition protractor-test-stop-record-button"
-            uib-tooltip="Stop"
-            tooltip-placement="above"
-            ng-click="stopRecording()"
-            aria-label="Stop recording">
-      <i class="material-icons">stop</i>
-    </button>
-  </div>
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-action-button oppia-audio-bar-button-transition"
-            ng-if="!voiceoverRecorder.status().isRecording && audioBlob"
-            ng-click="reRecord()"
-            aria-label="Record again">
-      Re-take
-    </button>
-  </div>
-  <div class="oppia-content-wrapper" ng-if="!voiceoverRecorder.status().isRecording && audioBlob">
-    <button class="btn oppia-audio-action-button oppia-audio-bar-button-transition protractor-test-confirm-record"
-            ng-click="saveRecordedAudio()"
-            aria-label="Save the recorded audio">
-      Confirm
-    </button>
-  </div>
-  <div class="oppia-content-wrapper" ng-if="!voiceoverRecorder.status().isRecording && audioBlob">
-    <button class="btn oppia-cancel-button oppia-audio-bar-button-transition"
-            ng-click="cancelRecording()"
-            aria-label="Cancel the recorded audio">
-      Cancel
-    </button>
-  </div>
-</div>
-<div class="oppia-audio-recording-bar" ng-if="audioIsCurrentlyBeingSaved">
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition" disabled>
-      <i class="material-icons">play_arrow</i>
-    </button>
-  </div>
-  <div class="oppia-content-wrapper oppia-flex-1-wrapper">
-    <div class="oppia-audio-bar-info">
-      <div>Saving<loading-dots></loading-dots></div>
-    </div>
-  </div>
-</div>
-<div ng-if="isAudioAvailable && !audioIsUpdating" class="oppia-audio-recording-bar">
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition protractor-test-play-pause-audio-button"
-            ng-click="playPauseUploadedAudioTranslation()">
-      <i class="material-icons"><[isPlayingUploadedAudio() ? 'pause' : 'play_arrow']></i>
-    </button>
-  </div>
-  <div class="oppia-slider-section oppia-content-wrapper fx-main-center fx-cross-center full-height">
-    <div ng-if="audioLoadingIndicatorIsShown">
-      <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-    </div>
-    <div ng-if="!audioLoadingIndicatorIsShown" class="fx-row fx-main-center fx-cross-center">
-      <oppia-audio-slider class="full-width"
-                          [value]="AudioPlayerService.getCurrentTime()"
-                          [max]="durationSecs"
-                          (value-change)="setProgress($event)"
-                          [thumb-label]="true"
-                          aria-label="audio-slider">
-      </oppia-audio-slider>
-    </div>
-  </div>
-  <div class="oppia-content-wrapper oppia-recording-timer">
-    <div ng-if="isAudioAvailable && audioIsLoading">
-      <[0 | formatTimer]> / <[durationSecs | formatTimer]>
-    </div>
-    <div ng-if="audioTimerIsShown && !audioIsLoading">
-      <[AudioPlayerService.getCurrentTime() | formatTimer]> / <[durationSecs | formatTimer]>
-    </div>
-    <div ng-if="!audioTimerIsShown && !audioIsLoading">
-       -- / --
-    </div>
-  </div>
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition protractor-test-upload-audio-button"
-            uib-tooltip="Upload audio"
-            tooltip-placement="above"
-            ng-hide="!canVoiceover"
-            ng-click="openAddAudioTranslationModal()">
-      <i class="material-icons">&#xE2C6;</i>
-    </button>
-  </div>
-  <div class="oppia-content-wrapper">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition protractor-test-delete-record"
-            uib-tooltip="Delete"
-            tooltip-placement="above"
-            ng-hide="!canVoiceover"
-            ng-click="openDeleteAudioTranslationModal()">
-      <i class="material-icons">&#xE872;</i>
-    </button>
-  </div>
-  <div class="oppia-content-wrapper" ng-if="!audioNeedsUpdate">
-    <button class="btn oppia-audio-button oppia-audio-bar-button-transition"
-            uib-tooltip="Audio needs update"
-            tooltip-placement="above"
-            ng-hide="!canVoiceover"
-            ng-click="toggleAudioNeedsUpdate()">
-      <i class="material-icons">warning</i>
-    </button>
-  </div>
-  <div class="oppia-content-wrapper" ng-if="audioNeedsUpdate">
-    <button class="btn oppia-audio-button audio-update-needed-button oppia-audio-bar-button-transition"
-            uib-tooltip="Audio does not need update"
-            tooltip-placement="top"
-            ng-hide="!canVoiceover"
-            ng-click="toggleAudioNeedsUpdate()">
-      <i class="material-icons">warning</i>
-    </button>
-  </div>
-</div>
-<div class="oppia-translation-bottom-right-container" ng-if="showRecorderWarning">
-  <span>
-    <strong>Warning: </strong>Don't navigate to other tabs of this page before saving recorded audio, otherwise the recorded audio will be lost.
-  </span>
-</div>
-<div class="oppia-translation-bottom-proTip" ng-if="canVoiceover && !showRecorderWarning && !audioBlob && !isAudioAvailable">
-  <div class="alert alert-secondary">
-    <strong>ProTips</strong>
-    <div>Use the "R" key to start/stop recording.</div>
-    <div>Use a dedicated microphone for best results.</div>
-  </div>
-</div>
-<style>
-  .oppia-drop-area {
-    border: 3px dashed #aaa;
-    height: 80%;
-    position: absolute;
-    top: 10%;
-    width: 100%;
-    z-index: 100;
-  }
-  .oppia-blur-background {
-    background-color: #fff;
-    height: 100%;
-    opacity: 0.8;
-    position: absolute;
-    width: 100%;
-  }
-  .oppia-drop-area-message {
-    font-size: 36px;
-    height: 100%;
-    padding: 20%;
-    position: absolute;
-    text-align: center;
-    width: 100%;
-  }
-  .oppia-drop-area-message-for-guest-users {
-    color: #aaa;
-    font-size: 36px;
-    height: 100%;
-    padding: 20%;
-    position: absolute;
-    text-align: center;
-    width: 100%;
-  }
-  .oppia-audio-recording-bar {
-    align-items: center;
-    background-color: #f7f7f7;
-    display: flex;
-    height: 100%;
-    padding: 0 10px;
-    width: 100%;
-  }
-  .audioRecorder {
-    align-items: center;
-    display: flex;
-  }
-  .audioRecorder > div:first-child {
-    width: 0 !important;
-  }
-  .oppia-content-wrapper {
-    margin: 0 5px;
-  }
-  .oppia-audio-bar-info {
-    background-color: #009688;
-    border-radius: 3px;
-    color: white;
-    flex: 1;
-    font-size: 12px;
-    height: 38px;
-    line-height: 27px;
-    text-align: center;
-  }
-  .oppia-audio-bar-info .padding-small-screen {
-    font-size: 11px;
-    padding: 5px 2px;
-  }
-  .oppia-audio-bar-info .padding-large-screen {
-    padding: 5px 20px;
-  }
-  .oppia-audio-button {
-    background-color: #009688;
-    border-radius: 20px;
-    color: white;
-    padding-left: 6px;
-    width: 38px;
-  }
-  .oppia-audio-bar-button-transition {
-    -webkit-transition: background-color .2s cubic-bezier(.35,0,.25,1);
-    -moz-transition: background-color .2s cubic-bezier(.35,0,.25,1);
-    -o-transition: background-color .2s cubic-bezier(.35,0,.25,1);
-    transition: background-color .2s cubic-bezier(.35,0,.25,1);
-  }
-  .oppia-audio-action-button {
-    background-color: #009688;
-    border-radius: 3px;
-    color: white;
-    padding-left: 6px;
-    width: 68px;
-  }
-  .oppia-cancel-button {
-    background-color: #009688;
-    border-radius: 3px;
-    color: white;
-    padding-left: 6px;
-    width: 57px;
-  }
-  .oppia-audio-button:hover, .oppia-audio-action-button:hover, .oppia-cancel-button:hover {
-    background-color: #01675d;
-    color: white;
-  }
-  .oppia-audio-button[disabled] {
-    background-color: #009688;
-    pointer-events: auto;
-  }
-  .oppia-audio-button:focus {
-    color: white;
-  }
-  .oppia-audio-visualiser {
-    flex: 1;
-    height: 38px;
-  }
-  .oppia-flex-1-wrapper {
-    flex: 1;
-  }
-  .oppia-mp3-converting {
-    background-color: #009688;
-    border-radius: 3px;
-    color: white;
-    flex: 1;
-    font-size: 12px;
-    height: 38px;
-    line-height: 27px;
-    padding: 5px 40px;
-    text-align: center;
-  }
-  .oppia-recording-timer {
-    font-size: 14px;
-    text-align: center;
-    width: 83px;
-  }
-  .oppia-slider-section {
-    background-color: #009688;
-    border-radius: 3px;
-    color: white;
-    flex: 1;
-    font-size: 12px;
-    height: 38px;
-    padding: 0 15px;
-    text-align: center;
-  }
-  .oppia-translation-bottom-right-container {
-    color: #ce133b;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    position: relative;
-    text-align: center;
-    top: 10px;
-  }
-  .oppia-translation-bottom-proTip {
-    color: #000;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    position: relative;
-    text-align: center;
-    top: 10px;
-  }
-  audio-translation-bar .audio-update-needed-button {
-    background-color: red;
-  }
-  audio-translation-bar .tooltip-inner {
-  max-width: none;
-  white-space: nowrap;
-  }
-  audio-translation-bar md-progress-linear {
-    height: 38px;
-    padding-top: 12px;
-  }
-  audio-translation-bar md-progress-linear.md-default-theme .md-container {
-    background-color: #f8f8f8;
-  }
-  audio-translation-bar md-progress-linear.md-default-theme .md-bar {
-    background-color: #009688;
-  }
-  audio-translation-bar md-slider {
-    height: 38px;
-  }
-  audio-translation-bar md-slider .md-track-container {
-    height: 1px;
-    top: 18px !important;
-  }
-  audio-translation-bar md-slider .md-track {
-    background-color: #f8f8f8;
-  }
-  audio-translation-bar md-slider.md-default-theme .md-track-fill {
-    background-color: #009688;
-  }
-  audio-translation-bar .md-thumb-container {
-    left: 4px;
-    top: -5px;
-  }
-  audio-translation-bar md-slider.md-default-theme .md-thumb:after {
-    background-color: #009688;
-    border-color: #ccc;
-  }
-  audio-translation-bar canvas {
-    background: #e4e1d1;
-    border-radius: 3px;
-    max-width: unset;
-  }
-  .full-width {
-    width: 100%;
-  }
-  .full-height {
-    height: 100%;
-  }
-</style>
+/*
+ * Copyright (C) 2019-2021 HERE Europe B.V.
+ * Licensed under Apache 2.0, see full license in LICENSE
+ * SPDX-License-Identifier: Apache-2.0
+ */
+import { Style, StyleSet } from "@here/harp-datasource-protocol";
+import {
+    FeaturesDataSource,
+    MapViewFeature,
+    MapViewMultiPolygonFeature
+} from "@here/harp-features-datasource";
+import { GeoCoordinates, sphereProjection } from "@here/harp-geoutils";
+import { MapControls, MapControlsUI } from "@here/harp-map-controls";
+import { CopyrightElementHandler, MapView } from "@here/harp-mapview";
+import { VectorTileDataSource } from "@here/harp-vectortile-datasource";
+import * as THREE from "three";
+
+import { apikey } from "../config";
+import { COUNTRIES } from "../resources/countries";
+
+/**
+ * This example illustrates how to add user polygons in [[MapView]]. As custom features, they are
+ * handled through a [[FeaturesDataSource]].
+ *
+ * First we create a base map. For more details, check the `hello` example.
+ * ```typescript
+ * [[include:harp_demo_features_polygons_0.ts]]
+ * ```
+ *
+ * Then we generate a custom [[StyleSet]] for the countries, with a color gradient based on the
+ * year that the country joined the EU. The [[Style]]s are all an [[ExtrudedPolygonStyle]] with only
+ * a variation in the color.
+ * ```typescript
+ * [[include:harp_demo_features_polygons_1.ts]]
+ * ```
+ *
+ * In order to have the extrusion animation for all the individual sets of countries joining, we
+ * group them and handle them in separate datasources, so that the various datasources' tiles will
+ * get animated independently and highlight new territories. The following snippet highlights the
+ * core part of the application's logic: we create these individual [[FeaturesDataSource]] for each
+ * set of countries, and create the [[MapViewMultiPolygonFeature]]s for the countries.
+ * ```typescript
+ * [[include:harp_demo_features_polygons_2.ts]]
+ * ```
+ *
+ * The rest of the code is example-dependent logic to handle the countries sets, with the joining
+ * and leaving mechanism, that adds and removes datasources.
+ */
+export namespace PolygonsFeaturesExample {
+    const EU = getEuropeMemberStatesPerYear();
+    const steps = Object.keys(EU.steps);
+    const stepsNumber = steps.length;
+
+    // snippet:harp_demo_features_polygons_1.ts
+    const { styleSet, colorRamp } = generateStyleSet({
+        property: "joiningDate",
+        thresholds: steps.map(stringYear => Number(stringYear)),
+        color: "#77ccff"
+    });
+    // end:harp_demo_features_polygons_1.ts
+
+    // snippet:harp_demo_features_polygons_0.ts
+    const map = createBaseMap();
+    // end:harp_demo_features_polygons_0.ts
+
+    const addPromises: Array<Promise<void>> = [];
+
+    const dateButtons: HTMLButtonElement[] = [];
+    const displayedDataSourceCache: FeaturesDataSource[] = [];
+    let currentStep = 0;
+    const featuresDataSources = generateDataSources();
+
+    let intervalID: any;
+    const dateDelay = 2500;
+    Promise.all(addPromises).then(() => {
+        intervalID = setInterval(setDate, dateDelay);
+        featuresDataSources.forEach(ds => map.removeDataSource(ds));
+    });
+    setCaption();
+
+    function getJoiningDate(j: number) {
+        let joiningDate = steps.find(year => EU.steps[year].joining.includes(j))!;
+        const actualDate = EU.steps[joiningDate].actualJoining;
+        if (actualDate !== undefined) {
+            joiningDate = actualDate;
+        }
+        return joiningDate;
+    }
+
+    function generateDataSources(): FeaturesDataSource[] {
+        const datasources = [];
+        for (let j = 0; j < EU.statesGroup.length; j++) {
+            const stateGroup = EU.statesGroup[j];
+            const features: MapViewFeature[] = [];
+            let age = steps.length;
+            let k = 0;
+            while (!EU.steps[steps[k]].joining.includes(j)) {
+                age--;
+                k++;
+            }
+            if (stateGroup.includes("germany")) {
+                age = steps.length;
+            }
+
+            // snippet:harp_demo_features_polygons_2.ts
+            for (const country of stateGroup) {
+                const feature = new MapViewMultiPolygonFeature(COUNTRIES[country], {
+                    name: country,
+                    joiningDate: getJoiningDate(j),
+                    height: 25000 + age * 25000
+                });
+                features.push(feature);
+            }
+            const featuresDataSource = new FeaturesDataSource({
+                name: `member-states-${j}`,
+                styleSetName: "geojson",
+                features,
+                maxGeometryHeight: 300000
+            });
+            const addPromise = map.addDataSource(featuresDataSource);
+            addPromises.push(addPromise);
+            datasources.push(featuresDataSource);
+            // end:harp_demo_features_polygons_2.ts
+        }
+        return datasources;
+    }
+
+    function setDate() {
+        // Update the UI's CSS to show the active year.
+        dateButtons.forEach(button => button.classList.remove("date-active"));
+        dateButtons[currentStep].classList.add("date-active");
+
+        const dataSourcesToShow: number[] = [];
+        const dataSourcesToReShow: number[] = [];
+
+        // If we are in the first step, empty the displayed datasource cache so all extruded
+        // features have the extrusion animation.
+        if (currentStep === 0) {
+            while (displayedDataSourceCache.length) {
+                map.removeDataSource(displayedDataSourceCache[0]);
+                displayedDataSourceCache.shift();
+            }
+        }
+
+        // List the datasources to show. We separate datasources referring to newly joining country
+        // sets in `dataSourcesToShow`, and those already there in the previous steps, in
+        // `dataSourcesToReShow`. The reason is that when jumping in a random year in the UI, we
+        // may want to show the extrusion animation only for the newly joining countries, although
+        // other datasources can show existing countries that were not displayed yet before the
+        // click.
+        for (const step of steps) {
+            if (step !== steps[currentStep]) {
+                dataSourcesToReShow.push(...EU.steps[step].joining);
+                for (const leaving of EU.steps[step].leaving) {
+                    if (dataSourcesToReShow.includes(leaving)) {
+                        dataSourcesToReShow.splice(dataSourcesToReShow.indexOf(leaving), 1);
+                    }
+                }
+            } else {
+                dataSourcesToShow.push(...EU.steps[step].joining);
+                for (const leaving of EU.steps[step].leaving) {
+                    if (dataSourcesToReShow.includes(leaving)) {
+                        dataSourcesToReShow.splice(dataSourcesToReShow.indexOf(leaving), 1);
+                    }
+                    if (dataSourcesToShow.includes(leaving)) {
+                        dataSourcesToShow.splice(dataSourcesToShow.indexOf(leaving), 1);
+                    }
+                }
+                break;
+            }
+        }
+        dataSourcesToReShow.forEach(value => {
+            const datasource = featuresDataSources[value];
+            if (!displayedDataSourceCache.includes(datasource)) {
+                map.addDataSource(datasource);
+                displayedDataSourceCache.push(datasource);
+            }
+        });
+        dataSourcesToShow.forEach(value => {
+            const datasource = featuresDataSources[value];
+            if (!displayedDataSourceCache.includes(datasource)) {
+                map.addDataSource(datasource);
+                displayedDataSourceCache.push(datasource);
+            }
+        });
+        displayedDataSourceCache.forEach((datasource, i) => {
+            let exists = false;
+            dataSourcesToShow.forEach(value => {
+                if (featuresDataSources[value] === datasource) {
+                    exists = true;
+                }
+            });
+            dataSourcesToReShow.forEach(value => {
+                if (featuresDataSources[value] === datasource) {
+                    exists = true;
+                }
+            });
+            if (!exists) {
+                displayedDataSourceCache.splice(i, 1);
+                map.removeDataSource(datasource);
+            }
+        });
+        currentStep = (currentStep + 1) % stepsNumber;
+    }
+
+    function setCaption() {
+        const caption = document.getElementById("dates-container") as HTMLDivElement;
+        let timeoutID: any;
+        for (let j = 0; j < steps.length; j++) {
+            const step = steps[j];
+            const dateButton = document.createElement("button");
+            dateButton.className = "date";
+            dateButton.textContent = step;
+            dateButton.style.backgroundColor = colorRamp[j];
+            dateButtons.push(dateButton);
+            dateButton.onclick = () => {
+                for (let k = 0; k < steps.length; k++) {
+                    if (steps[k] === dateButton.textContent) {
+                        currentStep = k;
+                        break;
+                    }
+                }
+                clearInterval(intervalID);
+                clearTimeout(timeoutID);
+                setDate();
+                timeoutID = setTimeout(() => {
+                    intervalID = setInterval(setDate, dateDelay);
+                }, dateDelay);
+            };
+            caption.appendChild(dateButton);
+        }
+    }
+
+    function generateStyleSet(options: {
+        thresholds: number[];
+        color: string;
+        property: string;
+    }): { styleSet: StyleSet; colorRamp: string[] } {
+        const styles: StyleSet = [];
+        const colorStrings: string[] = [];
+        const length = options.thresholds.length;
+        for (let i = 0; i < length; i++) {
+            const color = new THREE.Color(options.color);
+            color.multiplyScalar((length - i) / 2.5 / length + 0.6);
+            const colorString = "#" + color.getHexString();
+            colorStrings.push(colorString);
+            const max = options.thresholds[i];
+            const min = i - 1 < 0 ? 0 : options.thresholds[i - 1];
+            const propertyName = options.property;
+            const style: Style = {
+                description: "geoJson property-based style",
+                technique: "extruded-polygon",
+                when: [
+                    "all",
+                    ["==", ["geometry-type"], "Polygon"],
+                    [">", ["to-number", ["get", propertyName]], min],
+                    ["<=", ["to-number", ["get", propertyName]], max]
+                ],
+                attr: {
+                    color: colorString,
+                    transparent: true,
+                    opacity: 0.8,
+                    boundaryWalls: false,
+                    constantHeight: true,
+                    lineWidth: 1,
+                    lineColor: "#003344",
+                    emissive: colorString,
+                    emissiveIntensity: 0.45
+                },
+                renderOrder: 1000
+            };
+            styles.push(style);
+        }
+        return { styleSet: styles, colorRamp: colorStrings };
+    }
+
+    function createBaseMap(): MapView {
+        document.body.innerHTML += getExampleHTML();
+
+        const canvas = document.getElementById("mapCanvas") as HTMLCanvasElement;
+        const mapView = new MapView({
+            canvas,
+            projection: sphereProjection,
+            theme: {
+                extends: "resources/berlin_tilezen_night_reduced.json",
+                definitions: {
+                    northPoleColor: {
+                        type: "color",
+                        value: "#3a3c3e"
+                    },
+                    southPoleColor: {
+                        type: "color",
+                        value: "#4a4d4e"
+                    }
+                },
+                styles: {
+                    geojson: styleSet,
+                    polar: [
+                        {
+                            description: "North pole",
+                            when: ["==", ["get", "kind"], "north_pole"],
+                            technique: "fill",
+                            attr: {
+                                color: ["ref", "northPoleColor"]
+                            },
+                            renderOrder: 5
+                        },
+                        {
+                            description: "South pole",
+                            when: ["==", ["get", "kind"], "south_pole"],
+                            technique: "fill",
+                            attr: {
+                                color: ["ref", "southPoleColor"]
+                            },
+                            renderOrder: 5
+                        }
+                    ]
+                }
+            },
+            target: new GeoCoordinates(40, 15),
+            zoomLevel: 3.2,
+            enableMixedLod: true
+        });
+        mapView.renderLabels = false;
+
+        const controls = new MapControls(mapView);
+        controls.maxTiltAngle = 50;
+        controls.maxZoomLevel = 6;
+
+        const ui = new MapControlsUI(controls, { projectionSwitch: true });
+        canvas.parentElement!.appendChild(ui.domElement);
+
+        window.addEventListener("resize", () => mapView.resize(innerWidth, innerHeight));
+
+        CopyrightElementHandler.install("copyrightNotice", mapView);
+
+        const baseMap = new VectorTileDataSource({
+            baseUrl: "https://vector.hereapi.com/v2/vectortiles/base/mc",
+            authenticationCode: apikey
+        });
+        mapView.addDataSource(baseMap);
+
+        return mapView;
+    }
+
+    function getEuropeMemberStatesPerYear(): {
+        steps: { [key: string]: { joining: number[]; leaving: number[]; actualJoining?: string } };
+        statesGroup: string[][];
+    } {
+        const statesGroup = [
+            ["france", "belgium", "netherlands", "italy", "luxembourg"],
+            ["algeria"],
+            ["ireland", "denmark"],
+            ["greenland"],
+            ["greece"],
+            ["spain", "portugal"],
+            ["frg"],
+            ["germany"],
+            ["austria", "sweden", "finland"],
+            [
+                "estonia",
+                "latvia",
+                "lituania",
+                "poland",
+                "slovakia",
+                "hungary",
+                "czech",
+                "slovenia",
+                "cyprus",
+                "malta"
+            ],
+            ["romania", "bulgaria"],
+            ["croatia"],
+            ["uk"]
+        ];
+        const UE = {
+            "1957": {
+                joining: [0, 1, 6],
+                // Remove other country groups when looping.
+                leaving: [2, 3, 4, 5, 7, 8, 9, 10, 11, 12]
+            },
+            "1962": { leaving: [1], joining: [] },
+            "1973": {
+                joining: [2, 3, 12],
+                leaving: []
+            },
+            "1981": {
+                joining: [4],
+                leaving: []
+            },
+            "1985": { leaving: [3], joining: [] },
+            "1986": { joining: [5], leaving: [] },
+            "1990": { leaving: [6], joining: [7], actualJoining: "1957" },
+            "1995": { joining: [8], leaving: [] },
+            "2004": {
+                joining: [9],
+                leaving: []
+            },
+            "2007": { joining: [10], leaving: [] },
+            "2013": { joining: [11], leaving: [] },
+            "2020": { joining: [], leaving: [12] }
+        };
+        return { steps: UE, statesGroup };
+    }
+
+    function getExampleHTML() {
+        return (
+            `
+            <style>
+                #mapCanvas {
+                    top: 0;
+                }
+                #caption{
+                    width: 100%;
+                    position: absolute;
+                    bottom: 25px;
+                    text-align:center;
+                    font-family: Arial;
+                    color:#222;
+                }
+                #dates-container{
+                    padding:3px
+                }
+                h1{
+                    font-size:15px;
+                    text-transform: uppercase;
+                }
+                h1, .date{
+                    padding: 5px 15px;
+                    display: inline-block;
+                }
+                .date{
+                    display: inline;
+                    border:none;
+                    outline:none;
+                    transition: all 0.5s ease;
+                    background: none;
+                    cursor: pointer;
+                    font-weight: bold;
+                    color: #222;
+                    border-bottom: solid 3px rgba(0,0,0,0);
+                }
+                .date-active{
+                    border-bottom: solid 3px rgba(0,0,0,1);
+                }
+                #caption-bg{
+                    display: inline-block;
+                    background: rgba(255,255,255,0.8);
+                    border-radius: 4px;
+                    margin: 0 10px;
+                    max-width:calc(100% - 150px);
+                }
+                #info{
+                    color: #fff;
+                    width: 80%;
+                    text-align: center;
+                    font-family: monospace;
+                    left: 50%;
+                    position: relative;
+                    margin: 10px 0 0 -40%;
+                    font-size: 15px;
+                }
+                @media screen and (max-width: 700px) {
+                    .date{
+                        padding:5px;
+                    }
+                    h1{
+                        padding:0px;
+                        margin:5px
+                    }
+                    #info{
+                        font-size:11px;
+                    }
+                }
+            </style>
+            <p id=info>This example demonstrates user polygons, with ` +
+            `property-based styling for their color. The height also ` +
+            `directly comes from the feature's "height" property by default. Here both the color ` +
+            `and the height represent the seniority of a state.</p>
+            <div id=caption>
+                <div id=caption-bg>
+                    <h1>Member states of the European Union</h1>
+                    <div id=dates-container></div>
+                </div>
+            </div>
+        `
+        );
+    }
+}
