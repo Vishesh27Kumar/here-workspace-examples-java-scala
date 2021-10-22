@@ -1,7 +1,7 @@
 @extends('layouts.main')
 @section('content')
 <div class="row">
-    <div class="col-sm-12">
+    <div class="col-ksm-12"> 
         <div class="custom-panel">
             <div class="custom-panel-heading">{{trans('app.profile.update')}}</div>
             {!! Form::model($user, ['route' => ['profile.store'], 'class' => 'form-horizontal']) !!}
