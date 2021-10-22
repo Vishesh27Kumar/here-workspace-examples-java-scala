@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Modules\Pim\Http\Controllers;
+namespace App\Modules\Pim\Http\Controllers
 
 use App\Http\Controllers\Controller;
 use App\Modules\Pim\Repositories\Interfaces\EmployeeRepositoryInterface as EmployeeRepository;
