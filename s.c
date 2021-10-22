@@ -6,7 +6,7 @@ import com.messagebird.exceptions.UnauthorizedException;
 import com.messagebird.objects.conversations.ConversationContent;
 import com.messagebird.objects.conversations.ConversationContentEmail;
 import com.messagebird.objects.conversations.ConversationContentType;
-import com.messagebird.objects.conversations.ConversationEmailContent;
+import com.messagebird.objects.conversations.ConversationEmailContent
 import com.messagebird.objects.conversations.ConversationEmailRecipient;
 import com.messagebird.objects.conversations.ConversationSendRequest;
 import com.messagebird.objects.conversations.ConversationSendResponse;
