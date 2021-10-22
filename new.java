@@ -1,167 +1,52 @@
-<?php
-
-namespace App\Models;
-use App\Mail\NotificationTemplateMail;
-use Backpack\CRUD\CrudTrait;
-use Illuminate\Database\Eloquent\Model;
-
-class Order extends Model
-{
-
-    use CrudTrait;
-
-    /*
-    |-------------------------------------------------------------------------
-    | GLOBAL VARIABLES
-    |--------------------------------------------------------------------------
-    */
-
-    protected $table = 'orders';
-    //protected $primaryKey = 'id';
-    // public $timestamps = false;
-    // protected $guarded = ['id'];
-    protected $fillable = [
-        'status_id',
-        'comment',
-        'invoice_date',
-        'delivery_date',
-        'shipping_address',
-        'billing_address',
-        'total_discount',
-        'total_discount_tax',
-        'total_shipping',
-        'total_shipping_tax',
-        'total',
-        'total_tax'
-    ];
-    // protected $hidden = [];
-    // protected $dates = [];
-    public $notificationVars = [
-        'userSalutation',
-        'userName',
-        'userEmail',
-        'carrier',
-        'total',
-        'status'
-    ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | NOTIFICATIONS VARIABLES
-    |--------------------------------------------------------------------------
-    */
-    public function notificationVariables()
-    {
-        return [
-            'userSalutation' => $this->user->salutation,
-            'userName'       => $this->user->name,
-            'userEmail'      => $this->user->email,
-            'total'          => $this->total(),
-            'carrier'        => $this->carrier()->first()->name,
-            'status'         => $this->status->name
-        ];
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | EVENTS
-    |--------------------------------------------------------------------------
-    */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::updating(function($order) {
-            // Send notification when order status was changed
-            $oldStatus = $order->getOriginal();
-            if ($order->status_id != $oldStatus['status_id'] && $order->status->notification != 0) {
-                // example of usage: (be sure that a notification template mail with the slug "example-slug" exists in db)
-                return \Mail::to($order->user->email)->send(new NotificationTemplateMail($order, "order-status-changed"));
-            }
-        });
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | FUNCTIONS
-    |--------------------------------------------------------------------------
-    */
-    public function total()
-    {
-        return decimalFormat($this->products->sum(function ($product) {
-            return $product->pivot->price_with_tax * $product->pivot->quantity;
-        }, 0) + $this->carrier->price);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONS
-    |--------------------------------------------------------------------------
-    */
-    public function user()
-    {
-        return $this->hasOne('App\User', 'id', 'user_id');
-    }
-
-    public function status()
-    {
-        return $this->hasOne('App\Models\OrderStatus', 'id', 'status_id');
-    }
-
-    public function statusHistory()
-    {
-        return $this->hasMany('App\Models\OrderStatusHistory')->orderBy('created_at', 'DESC');
-    }
-
-    public function carrier()
-    {
-        return $this->hasOne('App\Models\Carrier', 'id', 'carrier_id');
-    }
-
-    public function shippingAddress()
-    {
-        return $this->hasOne('App\Models\Address', 'id', 'shipping_address_id');
-    }
-
-    public function billingAddress()
-    {
-        return $this->hasOne('App\Models\Address', 'id', 'billing_address_id');
-    }
-
-    public function billingCompanyInfo()
-    {
-        return $this->hasOne('App\Models\Company', 'id', 'billing_company_id');
-    }
-
-    public function currency()
-    {
-        return $this->hasOne('App\Models\Currency', 'id', 'currency_id');
-    }
-
-    public function products()
-    {
-        return $this->belongsToMany('App\Models\Product')->withPivot(['name', 'sku', 'price', 'price_with_tax',  'quantity']);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | SCOPES
-    |--------------------------------------------------------------------------
-    */
-
-    /*
-    |--------------------------------------------------------------------------
-    | ACCESORS
-    |--------------------------------------------------------------------------
-    */
-
-    /*
-    |--------------------------------------------------------------------------
-    | MUTATORS
-    |--------------------------------------------------------------------------
-    */
-    public function getCreatedAtAttribute($value)
-    {
-        return \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $value)->format('d-m-Y H:i:s');
-    }
-}
+@extends('layouts.main')
+@section('content')
+<div class="row">
+    <div class="col-sm-12">
+        <div class="custom-panel">
+            <div class="custom-panel-heading">{{trans('app.profile.update')}}</div>
+            {!! Form::model($user, ['route' => ['profile.store'], 'class' => 'form-horizontal']) !!}
+                <div class="form-group">
+                    {!! Form::label('first_name', trans('app.pim.employees.first_name').':', ['class' => 'col-sm-3']) !!}
+                    <div class="col-sm-6">
+                        {!! Form::text('first_name', null, ['class' => 'form-control']) !!}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {!! Form::label('last_name', trans('app.pim.employees.last_name').':', ['class' => 'col-sm-3']) !!}
+                    <div class="col-sm-6">
+                        {!! Form::text('last_name', null, ['class' => 'form-control']) !!}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {!! Form::label('email', trans('app.pim.employees.email').':', ['class' => 'col-sm-3']) !!}
+                    <div class="col-sm-6">
+                        {!! Form::input('email', 'email', null, ['class' => 'form-control']) !!}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {!! Form::label('gender', trans('app.pim.employees.gender').':', ['class' => 'col-sm-3']) !!}
+                    <div class="col-sm-6">
+                        {!! Form::label('male', trans('app.pim.employees.gender_male')) !!}
+                        {!! Form::radio('gender', 'm', @$employee->gender == 'm', ['id' => 'male']) !!}
+                        {!! Form::label('female', trans('app.pim.employees.gender_female')) !!}
+                        {!! Form::radio('gender', 'f', @$employee->gender == 'f', ['id' => 'female']) !!}
+                    </div>
+                </div>
+                <div class="form-group">
+                    {!! Form::label('birth_date', trans('app.pim.employees.birth_date').':', ['class' => 'col-sm-3']) !!}
+                    <div class="col-sm-6">
+                        {!! Form::input('date', 'birth_date', null, ['class' => 'form-control']) !!}
+                    </div>
+                </div>
+                @include('errors._form-errors')
+                <hr>
+                <div class="form-group">
+                    <div class="col-sm-6 col-sm-offset-3">
+                        {!! Form::submit(trans('app.submit'), ['class' => 'btn btn-primary']) !!}
+                    </div>
+                </div>
+            {!! Form::close() !!}
+        </div>
+    </div>
+</div>
+@endsection
