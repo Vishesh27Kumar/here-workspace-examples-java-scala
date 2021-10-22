@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Models;
-
 use App\Mail\NotificationTemplateMail;
 use Backpack\CRUD\CrudTrait;
 use Illuminate\Database\Eloquent\Model;
