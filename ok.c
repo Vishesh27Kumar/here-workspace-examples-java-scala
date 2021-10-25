@@ -3,6 +3,7 @@
     <div class="col-sm-6">
         {!! Form::text('first_name', null, ['class' => 'form-control']) !!}
     </div>
+    sd
 </div>
 <div class="form-group">
     {!! Form::label('last_name', trans('app.pim.employees.last_name').':', ['class' => 'col-sm-3']) !!}
