@@ -1,7 +1,7 @@
 <div class="form-group">
     {!! Form::label('first_name', trans('app.pim.employees.first_name').':', ['class' => 'col-sm-3']) !!}
     <div class="col-sm-6">
-        {!! Form::text('first_name', null, ['class' => 'form-control']) !!}
+        {!! Form::text('first_name', null, ['class' => 'form-control']) !!
     </div>
 </div>
 <div class="form-group">
