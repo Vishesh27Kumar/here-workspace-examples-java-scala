@@ -8,7 +8,7 @@
     {!! Form::label('last_name', trans('app.pim.employees.last_name').':', ['class' => 'col-sm-3']) !!}
     <div class="col-sm-6">
         {!! Form::text('last_name', null, ['class' => 'form-control']) !!}
-    </div>
+    </div
 </div>
 <div class="form-group">
     {!! Form::label('email', trans('app.pim.employees.email').':', ['class' => 'col-sm-3']) !!}
