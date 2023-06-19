@@ -55,6 +55,7 @@ public class Compiler
 
   /** retriever to get input data */
   private Retriever retriever;
+  private string accountId;
 
   /** keep the configuration specific to this compiler */
   private CompilerConfig compilerConfig;
